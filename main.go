@@ -79,9 +79,9 @@ func main() {
 				return
 			}
 
+			switch method {
 			// - /todos/id - GET
-			if method == http.MethodGet {
-
+			case http.MethodGet:
 				task, errorID := f.FindTaskByID(id)
 				if errorID != nil {
 					http.Error(w, errorID.Error(), http.StatusNotFound)
@@ -92,9 +92,8 @@ func main() {
 				w.WriteHeader(http.StatusOK)
 				w.Write(task.Json())
 
-				// - /todos/id - PUT
-			} else if method == http.MethodPut {
-
+			// - /todos/id - PUT
+			case http.MethodPut:
 				// get Body
 				body, errorBody := io.ReadAll(r.Body)
 				if errorBody != nil {
@@ -115,16 +114,23 @@ func main() {
 					return
 				}
 
-				w.Header().Set("Content-Type", "application/json")
 				w.WriteHeader(http.StatusNoContent)
 
-			} else {
+			// - /todos/id - DELETE
+			case http.MethodDelete:
+				if errorDelete := f.DeleteTask(id); errorDelete != nil {
+					http.Error(w, errorDelete.Error(), http.StatusInternalServerError)
+					return
+				}
+				w.WriteHeader(http.StatusNoContent)
+
+			default:
 				http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+
 			}
 
 		} else {
-			//no muestra el string -> "404 Not Found, do you mean /todos/id?"
-			http.Error(w, "404 Not Found, do you mean /todos/id?", http.StatusNotFound)
+			http.Error(w, "404 Not Found, do you mean /todos/id -> id must be an integer?", http.StatusNotFound)
 		}
 
 	})

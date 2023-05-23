@@ -39,3 +39,22 @@ func FindAndUpdateStatus(id int, status bool) error {
 	}
 	return errors.New("the id does not exist")
 }
+
+func FindIndex(id int) (int, error) {
+	for i := 0; i < len(Tasks); i++ {
+		task := &Tasks[i]
+		if task.Id == id {
+			return i, nil
+		}
+	}
+	return -1, errors.New("the id does not exist")
+}
+
+func DeleteTask(id int) error {
+	if index, errorIndex := FindIndex(id); errorIndex != nil {
+		return errorIndex
+	} else {
+		Tasks = append(Tasks[:index], Tasks[index+1:]...)
+		return nil
+	}
+}
